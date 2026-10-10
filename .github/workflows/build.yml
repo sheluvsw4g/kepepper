@@ -128,7 +128,7 @@ jobs:
             CODE_SIGN_ENTITLEMENTS="" \
             -derivedDataPath build/DerivedData \
             -clonedSourcePackagesDirPath build/SourcePackages \
-            build 2>&1 | tee build/build.log | (xcbeautify || cat) || {
+            build 2>&1 | tee build/build.log || {
               echo "=== BUILD FAILED. RECENT LOG OUTPUT: ==="
               tail -n 120 build/build.log
               exit 1
