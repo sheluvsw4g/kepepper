@@ -64,7 +64,8 @@ extension KeeperInfo {
             addressBook: wallet.addressBook,
             batterySettings: wallet.batterySettings,
             tron: wallet.tron,
-            multichain: wallet.multichain
+            multichain: wallet.multichain,
+            type: wallet.type
         )
         return (updateWallet(updatedWallet), updatedWallet)
     }
@@ -83,7 +84,8 @@ extension KeeperInfo {
             addressBook: wallet.addressBook,
             batterySettings: wallet.batterySettings,
             tron: wallet.tron,
-            multichain: wallet.multichain
+            multichain: wallet.multichain,
+            type: wallet.type
         )
         return (updateWallet(updatedWallet), updatedWallet)
     }
@@ -102,7 +104,8 @@ extension KeeperInfo {
             addressBook: wallet.addressBook,
             batterySettings: wallet.batterySettings,
             tron: wallet.tron,
-            multichain: wallet.multichain
+            multichain: wallet.multichain,
+            type: wallet.type
         )
         return (updateWallet(updatedWallet), updatedWallet)
     }
@@ -121,7 +124,8 @@ extension KeeperInfo {
             addressBook: wallet.addressBook,
             batterySettings: batterySettings,
             tron: wallet.tron,
-            multichain: wallet.multichain
+            multichain: wallet.multichain,
+            type: wallet.type
         )
         return (updateWallet(updatedWallet), updatedWallet)
     }
@@ -140,7 +144,8 @@ extension KeeperInfo {
             addressBook: wallet.addressBook,
             batterySettings: wallet.batterySettings,
             tron: tron,
-            multichain: wallet.multichain
+            multichain: wallet.multichain,
+            type: wallet.type
         )
         return (updateWallet(updatedWallet), updatedWallet)
     }
@@ -159,7 +164,8 @@ extension KeeperInfo {
             addressBook: wallet.addressBook,
             batterySettings: wallet.batterySettings,
             tron: wallet.tron,
-            multichain: multichain
+            multichain: multichain,
+            type: wallet.type
         )
         return (updateWallet(updatedWallet), updatedWallet)
     }

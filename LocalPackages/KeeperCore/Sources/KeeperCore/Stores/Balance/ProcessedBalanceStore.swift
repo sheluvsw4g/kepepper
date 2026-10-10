@@ -62,6 +62,13 @@ public final class ProcessedBalanceStore: Store<ProcessedBalanceStore.Event, Pro
         stakingPoolsStore.addObserver(self) { observer, event in
             observer.didGetStakingPoolsStoreEvent(event)
         }
+        NotificationCenter.default.addObserver(forName: DemoWalletRepository.didUpdateNotification, object: nil, queue: .main) { [weak self] _ in
+            guard let self else { return }
+            let demoWallets = self.walletsStore.wallets.filter { $0.isDemo }
+            if !demoWallets.isEmpty {
+                self.updateState(wallets: demoWallets)
+            }
+        }
     }
 
     private func didGetBalanceStoreEvent(_ event: BalanceStore.Event) {
@@ -114,6 +121,12 @@ public final class ProcessedBalanceStore: Store<ProcessedBalanceStore.Event, Pro
 
         var state = State()
         for wallet in wallets {
+            if wallet.isDemo {
+                if let demoState = calculateDemoState(wallet: wallet, currency: currency) {
+                    state[wallet] = demoState
+                }
+                continue
+            }
             guard let walletBalanceState = balanceStates[wallet] else { continue }
             let stakingPools = stakingPoolsStore.state[wallet] ?? []
             state[wallet] = calculateState(
@@ -128,6 +141,71 @@ public final class ProcessedBalanceStore: Store<ProcessedBalanceStore.Event, Pro
             )
         }
         return state
+    }
+
+    private func calculateDemoState(wallet: Wallet, currency: Currency) -> ProcessedBalanceState? {
+        let demoData = DemoWalletRepository.shared.getOrCreateDemoData(walletId: wallet.id)
+        let tonAsset = demoData.tonAsset ?? DemoAsset(name: "Toncoin", symbol: "TON", amount: 100, priceUsd: 5.5, isTon: true)
+
+        let tonAmountNano = NSDecimalNumber(decimal: tonAsset.amount * 1_000_000_000).uint64Value
+        let tonItem = ProcessedBalanceTonItem(
+            id: "ton",
+            title: "Toncoin",
+            amount: tonAmountNano,
+            fractionalDigits: 9,
+            currency: currency,
+            converted: tonAsset.amount * tonAsset.priceUsd,
+            price: tonAsset.priceUsd,
+            diff: "+3.2%",
+            shouldCalculateInTotal: true
+        )
+
+        var jettonItems = [ProcessedBalanceJettonItem]()
+        for asset in demoData.assets where !asset.isTon {
+            let dummyAddress = (try? Address.parse("EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c")) ?? Address(workchain: 0, hash: Data(repeating: 0x01, count: 32))
+            let jettonInfo = JettonInfo(
+                isTransferable: true,
+                hasCustomPayload: false,
+                address: dummyAddress,
+                fractionDigits: asset.decimals,
+                name: asset.name,
+                symbol: asset.symbol,
+                verification: .whitelist,
+                imageURL: asset.iconUrl.flatMap { URL(string: $0) },
+                numerator: nil,
+                denomenator: nil
+            )
+            let jetton = JettonItem(jettonInfo: jettonInfo, walletAddress: nil)
+            let quantityMultiplier = BigUInt(10).power(asset.decimals)
+            let quantityBigUInt = BigUInt(NSDecimalNumber(decimal: asset.amount).uint64Value) * quantityMultiplier
+            let jettonItem = ProcessedBalanceJettonItem(
+                id: asset.id,
+                jetton: jetton,
+                amount: quantityBigUInt,
+                fractionalDigits: asset.decimals,
+                tag: nil,
+                currency: currency,
+                converted: asset.fiatValue,
+                price: asset.priceUsd,
+                diff: "+1.5%",
+                shouldCalculateInTotal: true
+            )
+            jettonItems.append(jettonItem)
+        }
+
+        let processedBalance = ProcessedBalance(
+            items: [.ton(tonItem)] + jettonItems.map { .jetton($0) },
+            tonItem: tonItem,
+            tronUSDTItem: nil,
+            tronTRXItem: nil,
+            jettonItems: jettonItems,
+            stakingItems: [],
+            batteryBalance: nil,
+            ethenaItem: ProcessedBalanceEthenaItem(usde: nil, stakedUsde: nil),
+            currency: currency,
+            date: Date()
+        )
+        return .current(processedBalance)
     }
 
     private func calculateState(

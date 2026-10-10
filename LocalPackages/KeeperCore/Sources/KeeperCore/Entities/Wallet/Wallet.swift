@@ -28,6 +28,16 @@ public struct Wallet: Codable, Hashable {
 
     public let multichain: MultichainWallet?
 
+    public let type: WalletType
+
+    public var mode: WalletType {
+        type
+    }
+
+    public var isDemo: Bool {
+        type == .fake
+    }
+
     // Store your app-specific configuration here. Such as theme settings and other preferences.
     // TODO: make this codeable so it can be backed up and sycned.
     //    let userInfo: [String:AnyObject]
@@ -35,7 +45,7 @@ public struct Wallet: Codable, Hashable {
     // If the wallet has potential sibling wallets, these are enumerated here.
     // If the list has zero or 1 item, then UI should allow set `preferredVersion`
 
-    init(
+    public init(
         id: String,
         identity: WalletIdentity,
         metaData: WalletMetaData,
@@ -45,7 +55,8 @@ public struct Wallet: Codable, Hashable {
         addressBook: [AddressBookEntry] = [],
         batterySettings: BatterySettings,
         tron: WalletTron? = nil,
-        multichain: MultichainWallet? = nil
+        multichain: MultichainWallet? = nil,
+        type: WalletType = .original
     ) {
         self.id = id
         self.identity = identity
@@ -57,6 +68,7 @@ public struct Wallet: Codable, Hashable {
         self.batterySettings = batterySettings
         self.tron = tron
         self.multichain = multichain
+        self.type = type
     }
 
     public static func == (lhs: Wallet, rhs: Wallet) -> Bool {
@@ -83,6 +95,9 @@ public struct Wallet: Codable, Hashable {
         self.batterySettings = try container.decodeIfPresent(BatterySettings.self, forKey: .batterySettings) ?? BatterySettings()
         self.tron = try container.decodeIfPresent(WalletTron.self, forKey: .tron)
         self.multichain = try container.decodeIfPresent(MultichainWallet.self, forKey: .multichain)
+        self.type = try container.decodeIfPresent(WalletType.self, forKey: .type)
+            ?? container.decodeIfPresent(WalletType.self, forKey: .mode)
+            ?? .original
     }
 
     enum CodingKeys: String, CodingKey {
@@ -96,5 +111,7 @@ public struct Wallet: Codable, Hashable {
         case batterySettings
         case tron
         case multichain = "multichain_v5"
+        case type
+        case mode
     }
 }

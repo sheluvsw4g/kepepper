@@ -29,6 +29,7 @@ struct AddWalletOptionPickerItem: Identifiable {
 enum AddWalletOptionPickerSectionType: CaseIterable, Hashable {
     case main
     case other
+    case demo
 
     var header: String? {
         switch self {
@@ -36,6 +37,8 @@ enum AddWalletOptionPickerSectionType: CaseIterable, Hashable {
             nil
         case .other:
             TKLocales.AddWallet.Sections.otherOptions
+        case .demo:
+            "Demo Wallet"
         }
     }
 
@@ -45,6 +48,8 @@ enum AddWalletOptionPickerSectionType: CaseIterable, Hashable {
             [.createRegular, .createMultichain, .importRegular]
         case .other:
             [.ledger, .keystone, .signer, .importWatchOnly]
+        case .demo:
+            [.createDemo]
         }
     }
 }
@@ -57,6 +62,7 @@ enum AddWalletOption: String, Hashable {
     case signer
     case keystone
     case ledger
+    case createDemo
 
     var title: String {
         switch self {
@@ -74,6 +80,8 @@ enum AddWalletOption: String, Hashable {
             return TKLocales.AddWallet.Items.PairKeystone.title
         case .ledger:
             return TKLocales.AddWallet.Items.PairLedger.title
+        case .createDemo:
+            return "Create Demo Wallet"
         }
     }
 
@@ -93,6 +101,8 @@ enum AddWalletOption: String, Hashable {
             return TKLocales.AddWallet.Items.PairKeystone.subtitle
         case .ledger:
             return TKLocales.AddWallet.Items.PairLedger.subtitle
+        case .createDemo:
+            return "Virtual wallet for simulation with custom balances & assets"
         }
     }
 
@@ -112,6 +122,8 @@ enum AddWalletOption: String, Hashable {
             return .TKUIKit.Icons.Size28.keystone
         case .ledger:
             return .TKUIKit.Icons.Size28.ledger
+        case .createDemo:
+            return .TKUIKit.Icons.Size28.wallet
         }
     }
 
@@ -119,6 +131,8 @@ enum AddWalletOption: String, Hashable {
         switch self {
         case .createMultichain:
             WalletMultichainPresentation.badgeTagSwiftUIConfiguration
+        case .createDemo:
+            .accentTag(text: "DEMO", accent: .accentOrange)
         case .createRegular, .importRegular, .importWatchOnly, .signer, .keystone, .ledger:
             nil
         }

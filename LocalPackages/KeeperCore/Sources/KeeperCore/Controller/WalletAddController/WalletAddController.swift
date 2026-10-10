@@ -6,7 +6,7 @@ import TonTransport
 import TronSwift
 
 public final class WalletAddController {
-    private let walletsStore: WalletsStore
+    public let walletsStore: WalletsStore
     private let tonProofTokenService: TonProofTokenService
     private let mnemonicAccess: MnemonicAccess
     private let importedWalletTronResolver: ImportedWalletTronResolver

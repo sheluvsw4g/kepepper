@@ -116,13 +116,24 @@ private extension WalletCoordinator {
         }
 
         module.output.didTapHistoryButton = { [weak self] in
-            self?.didTapHistoryButton?()
+            guard let self else { return }
+            if let activeWallet = try? self.keeperCoreMainAssembly.storesAssembly.walletsStore.activeWallet,
+               activeWallet.isDemo {
+                self.openDemoHistory(wallet: activeWallet)
+                return
+            }
+            self.didTapHistoryButton?()
         }
 
         router.push(viewController: module.view, animated: false)
     }
 
     func openManageTokens(wallet: Wallet) {
+        if wallet.isDemo {
+            openDemoManageAssets(wallet: wallet)
+            return
+        }
+
         let coordinator = ManageTokensCoordinator(
             router: router,
             wallet: wallet,
@@ -136,6 +147,41 @@ private extension WalletCoordinator {
         }
 
         coordinator.start()
+    }
+
+    func openDemoSend(wallet: Wallet) {
+        let vc = DemoSendViewController(wallet: wallet)
+        let navigationController = TKNavigationController(rootViewController: vc)
+        navigationController.configureTransparentAppearance()
+        router.present(navigationController)
+    }
+
+    func openDemoReceive(wallet: Wallet) {
+        let vc = DemoReceiveViewController(wallet: wallet)
+        let navigationController = TKNavigationController(rootViewController: vc)
+        navigationController.configureTransparentAppearance()
+        router.present(navigationController)
+    }
+
+    func openDemoSwap(wallet: Wallet) {
+        let vc = DemoSwapViewController(wallet: wallet)
+        let navigationController = TKNavigationController(rootViewController: vc)
+        navigationController.configureTransparentAppearance()
+        router.present(navigationController)
+    }
+
+    func openDemoHistory(wallet: Wallet) {
+        let vc = DemoHistoryViewController(wallet: wallet)
+        let navigationController = TKNavigationController(rootViewController: vc)
+        navigationController.configureTransparentAppearance()
+        router.present(navigationController)
+    }
+
+    func openDemoManageAssets(wallet: Wallet) {
+        let vc = DemoManageAssetsViewController(wallet: wallet)
+        let navigationController = TKNavigationController(rootViewController: vc)
+        navigationController.configureTransparentAppearance()
+        router.present(navigationController)
     }
 
     @MainActor
@@ -175,14 +221,26 @@ private extension WalletCoordinator {
         }
 
         module.output.didTapWithdraw = { [weak self] wallet in
+            if wallet.isDemo {
+                self?.openDemoSend(wallet: wallet)
+                return
+            }
             self?.didTapWithdraw?(wallet)
         }
 
         module.output.didTapDeposit = { [weak self] wallet in
+            if wallet.isDemo {
+                self?.openDemoReceive(wallet: wallet)
+                return
+            }
             self?.didTapDeposit?(wallet)
         }
 
         module.output.didTapSwap = { [weak self] wallet in
+            if wallet.isDemo {
+                self?.openDemoSwap(wallet: wallet)
+                return
+            }
             self?.didTapSwap?(wallet)
         }
 

@@ -120,7 +120,24 @@ private extension AddWalletCoordinator {
             openPairKeystone()
         case .ledger:
             openPairLedger()
+        case .createDemo:
+            openCreateDemoWallet()
         }
+    }
+
+    func openCreateDemoWallet() {
+        let vc = CreateDemoWalletViewController(walletsStore: walletAddController.walletsStore)
+        let navigationController = TKNavigationController(rootViewController: vc)
+        navigationController.configureTransparentAppearance()
+        vc.onWalletCreated = { [weak self] in
+            self?.didAddWallets?()
+        }
+        vc.onCancel = { [weak self] in
+            self?.didCancel?()
+        }
+        router.present(navigationController, onDismiss: { [weak self] in
+            self?.didCancel?()
+        })
     }
 
     func logImportStarted(for option: AddWalletOption) {
@@ -128,7 +145,7 @@ private extension AddWalletCoordinator {
         let walletMode: WalletMode
 
         switch option {
-        case .createRegular, .createMultichain, .importRegular:
+        case .createRegular, .createMultichain, .importRegular, .createDemo:
             return
         case .importWatchOnly:
             walletSource = .watchonly

@@ -294,6 +294,9 @@ private extension WalletsListViewModelImplementation {
                 observer.reloadAllWalletsBalance()
             }
         }
+        NotificationCenter.default.addObserver(forName: DemoWalletRepository.didUpdateNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.refreshSnapshot()
+        }
     }
 
     private func updateList(
@@ -395,6 +398,14 @@ private extension WalletsListViewModelImplementation {
         let caption: String
         if isSecure {
             caption = .secureModeValueShort
+        } else if wallet.isDemo {
+            let demoData = DemoWalletRepository.shared.getOrCreateDemoData(walletId: wallet.id)
+            let currency = currencyStore.getState()
+            caption = amountFormatter.format(
+                decimal: demoData.totalFiatBalance,
+                accessory: .fiat(currency),
+                style: .fiatBalance
+            )
         } else if wallet.isMultichain {
             if let portfolioTotal,
                let total = multichainFormatter.portfolioFiatTotalAndCurrency(

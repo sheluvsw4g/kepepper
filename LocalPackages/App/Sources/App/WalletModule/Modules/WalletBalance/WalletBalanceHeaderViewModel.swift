@@ -86,6 +86,10 @@ final class WalletBalanceHeaderViewModel {
             self?.refresh()
         }
 
+        NotificationCenter.default.addObserver(forName: DemoWalletRepository.didUpdateNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.update()
+        }
+
         update()
     }
 
@@ -203,6 +207,13 @@ final class WalletBalanceHeaderViewModel {
         let balance: BalanceViewContent.Balance = {
             if state.isSecure {
                 return .secure(color: balanceColor)
+            }
+            if wallet.isDemo, let demoData = DemoWalletRepository.shared.getDemoData(walletId: wallet.id) {
+                return headerMapper.mapFiatBalanceAmount(
+                    amount: demoData.totalFiatBalance,
+                    currency: state.currency,
+                    color: balanceColor
+                )
             }
             return headerMapper.mapTotalBalanceAmount(
                 totalBalance: totalBalance,
