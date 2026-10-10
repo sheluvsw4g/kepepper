@@ -24,24 +24,41 @@ jobs:
           submodules: recursive
           fetch-depth: 1
 
-      - name: Select Xcode Version
+      - name: Select Xcode Version & Platform
         run: |
           echo "Available Xcode installations:"
           ls -d /Applications/Xcode* || true
           
-          # Default on runner or explicit selection
-          if [ -d "/Applications/Xcode_16.2.app" ]; then
+          # Test each Xcode to find one that has the iOS runtime installed
+          SELECTED_XCODE=""
+          for xc in /Applications/Xcode_16*.app /Applications/Xcode.app /Applications/Xcode_15*.app; do
+            if [ -d "$xc" ]; then
+              echo "Checking $xc for iOS platform..."
+              DEV_DIR="$xc/Contents/Developer"
+              if "$DEV_DIR/usr/bin/xcodebuild" -version 2>/dev/null; then
+                # Check if it has an iOS SDK or runtime
+                if "$DEV_DIR/usr/bin/xcodebuild" -showsdks 2>/dev/null | grep -q "iOS"; then
+                  echo "Found iOS SDK in $xc"
+                  SELECTED_XCODE="$xc"
+                  break
+                fi
+              fi
+            fi
+          done
+          
+          if [ -n "$SELECTED_XCODE" ]; then
+            sudo xcode-select -s "$SELECTED_XCODE/Contents/Developer"
+          elif [ -d "/Applications/Xcode_16.2.app" ]; then
             sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
-          elif [ -d "/Applications/Xcode_16.1.app" ]; then
-            sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer
-          elif [ -d "/Applications/Xcode.app" ]; then
-            sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
           fi
           
           xcodebuild -version
           swift --version
           
-          # Ensure simulator service is running and inspect available runtimes
+          echo "=== Installed SDKs ==="
+          xcodebuild -showsdks || true
+          
+          echo "=== Simctl Runtimes ==="
           xcrun simctl list runtimes || true
 
       - name: Setup xcbeautify
@@ -77,21 +94,26 @@ jobs:
           
           export CLONED_SOURCE_PACKAGES_DIR="$(pwd)/build/SourcePackages"
           
-          # Find the first available iPhone simulator
-          SIM_LINE=$(xcrun simctl list devices available | grep -E 'iPhone 16|iPhone 15|iPhone' | head -n 1)
-          SIM_ID=$(echo "$SIM_LINE" | grep -oE '[0-9A-Fa-f-]{36}')
-          echo "Selected Simulator Line: $SIM_LINE"
-          echo "Selected Simulator ID: $SIM_ID"
+          echo "=== Eligible Destinations for Scheme Keeper ==="
+          xcodebuild -project Keeper.xcodeproj -scheme Keeper -showdestinations || true
           
-          if [ -n "$SIM_ID" ]; then
-            # Boot simulator so CoreSimulator registers it as active destination
-            echo "Booting simulator $SIM_ID..."
-            xcrun simctl boot "$SIM_ID" || true
-            DEST="platform=iOS Simulator,id=$SIM_ID"
+          # Extract first valid destination id from showdestinations, or from booted simulator
+          DEST_ID=$(xcodebuild -project Keeper.xcodeproj -scheme Keeper -showdestinations 2>/dev/null | grep -E 'platform:iOS Simulator, id:' | head -n 1 | grep -oE '[0-9A-Fa-f-]{36}')
+          
+          if [ -z "$DEST_ID" ]; then
+            # Find any available iPhone simulator device
+            DEST_ID=$(xcrun simctl list devices available | grep -E 'iPhone 16|iPhone 15|iPhone 14|iPhone' | head -n 1 | grep -oE '[0-9A-Fa-f-]{36}')
+          fi
+          
+          if [ -n "$DEST_ID" ]; then
+            echo "Selected Destination ID: $DEST_ID"
+            xcrun simctl boot "$DEST_ID" 2>/dev/null || true
+            DEST="platform=iOS Simulator,id=$DEST_ID"
           else
             DEST="generic/platform=iOS Simulator"
           fi
-          echo "Target destination: $DEST"
+          
+          echo "Using build destination: $DEST"
           
           set -o pipefail
           xcodebuild \
