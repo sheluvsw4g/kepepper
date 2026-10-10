@@ -76,6 +76,13 @@ jobs:
           
           export CLONED_SOURCE_PACKAGES_DIR="$(pwd)/build/SourcePackages"
           
+          echo "=== Diagnostic: Available Simulators ==="
+          xcrun simctl list devices available || true
+          
+          echo "=== Diagnostic: Xcode Schemes & Destinations ==="
+          xcodebuild -project Keeper.xcodeproj -scheme Keeper -showdestinations || true
+          
+          # Pick available simulator ID if present
           SIM_ID=$(xcrun simctl list devices available | awk '/iPhone/ { last = $0; if (/Booted/) { print; found = 1; exit } } END { if (!found && last) print last }' | grep -oE '[0-9A-Fa-f-]{36}')
           echo "Selected Simulator ID: $SIM_ID"
           
@@ -84,10 +91,11 @@ jobs:
           else
             DEST="generic/platform=iOS Simulator"
           fi
-          echo "Building with destination: $DEST"
+          echo "Initial destination choice: $DEST"
           
           set -o pipefail
-          xcodebuild \
+          # First attempt with chosen destination
+          if ! xcodebuild \
             -project Keeper.xcodeproj \
             -scheme Keeper \
             -configuration KeeperDebug \
@@ -99,11 +107,37 @@ jobs:
             CODE_SIGN_ENTITLEMENTS="" \
             -derivedDataPath build/DerivedData \
             -clonedSourcePackagesDirPath build/SourcePackages \
-            build 2>&1 | tee build/build.log | (xcbeautify || cat) || {
-              echo "=== BUILD FAILED. RECENT LOG OUTPUT: ==="
-              tail -n 120 build/build.log
-              exit 1
-            }
+            build 2>&1 | tee build/build.log | (xcbeautify || cat); then
+              
+              echo "=== First build attempt failed. Checking fallback to generic/platform=iOS Simulator or any available iPhone simulator ==="
+              tail -n 60 build/build.log || true
+              
+              # If destination issue, try generic simulator
+              if grep -q "Unable to find a destination" build/build.log || grep -q "Ineligible destinations" build/build.log; then
+                echo "Retrying build with generic/platform=iOS Simulator..."
+                xcodebuild \
+                  -project Keeper.xcodeproj \
+                  -scheme Keeper \
+                  -configuration KeeperDebug \
+                  -destination "generic/platform=iOS Simulator" \
+                  ARCHS=arm64 \
+                  CODE_SIGNING_ALLOWED=NO \
+                  CODE_SIGNING_REQUIRED=NO \
+                  CODE_SIGN_IDENTITY="" \
+                  CODE_SIGN_ENTITLEMENTS="" \
+                  -derivedDataPath build/DerivedData \
+                  -clonedSourcePackagesDirPath build/SourcePackages \
+                  build 2>&1 | tee build/build.log | (xcbeautify || cat) || {
+                    echo "=== FALLBACK BUILD FAILED. RECENT LOG OUTPUT: ==="
+                    tail -n 120 build/build.log
+                    exit 1
+                  }
+              else
+                echo "=== BUILD FAILED. RECENT LOG OUTPUT: ==="
+                tail -n 120 build/build.log
+                exit 1
+              fi
+          fi
 
       - name: Package .ipa
         run: |
