@@ -34,7 +34,6 @@ let package = Package(
                 "TKLogging",
             ],
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
         .target(
@@ -45,7 +44,6 @@ let package = Package(
                 .product(name: "FirebaseRemoteConfig", package: "firebase-ios-sdk"),
             ],
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
     ],

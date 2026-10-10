@@ -70,7 +70,6 @@ let package = Package(
             ],
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
         .testTarget(
@@ -80,7 +79,6 @@ let package = Package(
             ],
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
         .target(
@@ -93,7 +91,6 @@ let package = Package(
             ],
             path: "Sources/KeeperCoreSensitive",
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
         .target(
@@ -177,7 +174,6 @@ let package = Package(
             sources: ["Sources"],
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
         .target(
@@ -225,7 +221,6 @@ let package = Package(
             sources: ["Sources"],
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
         .target(
@@ -240,7 +235,6 @@ let package = Package(
             sources: ["Sources"],
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
         .target(
@@ -255,7 +249,6 @@ let package = Package(
             sources: ["Sources"],
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
         .testTarget(
@@ -265,7 +258,6 @@ let package = Package(
             ],
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
     ],

@@ -63,7 +63,6 @@ let package = Package(
             resources: [.process("Resources")],
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
         .testTarget(
@@ -71,7 +70,6 @@ let package = Package(
             dependencies: ["TKCore"],
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
     ],

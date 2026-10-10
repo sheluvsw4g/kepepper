@@ -31,7 +31,6 @@ let package = Package(
             path: "Sources/TonTransport",
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
     ],

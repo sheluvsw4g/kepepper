@@ -44,7 +44,6 @@ let package = Package(
             path: "TKUIKit/Sources/TKUIKit",
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
         .testTarget(
@@ -52,7 +51,6 @@ let package = Package(
             dependencies: ["TKUIKit"],
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
     ],

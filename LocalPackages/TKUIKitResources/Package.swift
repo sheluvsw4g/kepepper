@@ -28,7 +28,6 @@ let package = Package(
             ],
 
             swiftSettings: [
-                .treatAllWarnings(as: .error),
             ]
         ),
     ],
