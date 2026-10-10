@@ -53,7 +53,7 @@ let package = Package(
         .package(url: "https://github.com/tonkeeper/ton-api-swift", exact: "0.8.0"),
         .package(url: "https://github.com/tonkeeper/battery-api-swift", exact: "4.0.1"),
         .package(url: "https://github.com/apple/swift-openapi-runtime", .upToNextMinor(from: "0.3.0")),
-        .package(url: "https://github.com/tonkeeper/chainkit-swift", exact: "0.1.28"),
+        .package(path: "../chainkit-swift"),
         .package(url: "https://github.com/reown-com/reown-swift.git", exact: "2.2.9"),
         .package(url: "https://github.com/Flight-School/AnyCodable", .upToNextMajor(from: "0.6.1")),
         .package(url: "https://github.com/centrifugal/centrifuge-swift", exact: "0.9.0"),

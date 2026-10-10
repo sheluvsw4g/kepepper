@@ -101,15 +101,6 @@
       }
     },
     {
-      "identity" : "chainkit-swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/tonkeeper/chainkit-swift",
-      "state" : {
-        "revision" : "3524fed8e5ff81593a747b6e8465d443755d9350",
-        "version" : "0.1.28"
-      }
-    },
-    {
       "identity" : "cocoalumberjack",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/CocoaLumberjack/CocoaLumberjack.git",

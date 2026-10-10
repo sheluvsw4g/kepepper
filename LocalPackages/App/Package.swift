@@ -30,7 +30,7 @@ let package = Package(
         .package(url: "https://github.com/objecthub/swift-numberkit.git", .upToNextMajor(from: "2.6.0")),
         .package(url: "https://github.com/tonkeeper/URKit", .upToNextMinor(from: "16.0.1")),
         // Only `AppTests` uses this — the Perps fixtures build ChainKit values directly.
-        .package(url: "https://github.com/tonkeeper/chainkit-swift", exact: "0.1.28"),
+        .package(path: "../chainkit-swift"),
         .package(path: "../Ledger"),
         .package(path: "../TronSwift"),
         .package(path: "../TKKeychain"),
