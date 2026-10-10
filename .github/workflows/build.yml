@@ -91,38 +91,20 @@ jobs:
         run: |
           mkdir -p build/DerivedData
           mkdir -p build/SourcePackages
+          touch build/build.log
           
           export CLONED_SOURCE_PACKAGES_DIR="$(pwd)/build/SourcePackages"
+          export MODULE_CACHE_PATH="$HOME/Library/Developer/Xcode/DerivedData/ModuleCache.noindex"
           
-          echo "=== Eligible Destinations for Scheme Keeper ==="
-          xcodebuild -project Keeper.xcodeproj -scheme Keeper -showdestinations || true
-          
-          # Extract first valid destination id from showdestinations, or from booted simulator
-          DEST_ID=$(xcodebuild -project Keeper.xcodeproj -scheme Keeper -showdestinations 2>/dev/null | grep -E 'platform:iOS Simulator, id:' | head -n 1 | grep -oE '[0-9A-Fa-f-]{36}')
-          
-          if [ -z "$DEST_ID" ]; then
-            # Find any available iPhone simulator device
-            DEST_ID=$(xcrun simctl list devices available | grep -E 'iPhone 16|iPhone 15|iPhone 14|iPhone' | head -n 1 | grep -oE '[0-9A-Fa-f-]{36}')
-          fi
-          
-          if [ -n "$DEST_ID" ]; then
-            echo "Selected Destination ID: $DEST_ID"
-            xcrun simctl boot "$DEST_ID" 2>/dev/null || true
-            DEST="platform=iOS Simulator,id=$DEST_ID"
-          else
-            DEST="generic/platform=iOS Simulator"
-          fi
-          
-          echo "Using build destination: $DEST"
-          
-          touch build/build.log
+          echo "Building Keeper with generic/platform=iOS Simulator..."
           set -o pipefail
           xcodebuild \
             -project Keeper.xcodeproj \
             -scheme Keeper \
             -configuration KeeperDebug \
-            -destination "$DEST" \
+            -destination 'generic/platform=iOS Simulator' \
             ARCHS=arm64 \
+            CLANG_MODULE_CACHE_PATH="$MODULE_CACHE_PATH" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
