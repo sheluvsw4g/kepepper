@@ -1,6 +1,5 @@
 import Foundation
 import TonSwift
-import UIKit
 
 public struct DemoWalletFactory {
     public static func createDemoWallet(
