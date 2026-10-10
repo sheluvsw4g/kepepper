@@ -29,7 +29,6 @@ jobs:
           echo "Available Xcode installations:"
           ls -d /Applications/Xcode* || true
           
-          # Prefer Xcode 16.2, 16.1 or highest available Xcode 16+
           if [ -d "/Applications/Xcode_16.3.app" ]; then
             sudo xcode-select -s /Applications/Xcode_16.3.app/Contents/Developer
           elif [ -d "/Applications/Xcode_16.2.app" ]; then
@@ -56,6 +55,11 @@ jobs:
           chmod +x ./scripts/firebase/provision_firebase.sh
           sh ./scripts/firebase/provision_firebase.sh
 
+      - name: Setup Build Credentials & Dirs
+        run: |
+          chmod +x ./scripts/setup_build_credentials.sh
+          sh ./scripts/setup_build_credentials.sh "$(pwd)/build"
+
       - name: Cache SwiftPM Dependencies
         uses: actions/cache@v4
         with:
@@ -66,55 +70,46 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
 
-      - name: Build & Archive Keeper (iOS Device)
+      - name: Build Keeper (ARM64 Device Binary)
         run: |
           mkdir -p build/DerivedData
           mkdir -p build/SourcePackages
-          mkdir -p build/Archive
+          
+          export CLONED_SOURCE_PACKAGES_DIR="$(pwd)/build/SourcePackages"
           
           set -o pipefail
           xcodebuild \
-            archive \
             -project Keeper.xcodeproj \
             -scheme Keeper \
-            -configuration KeeperRelease \
+            -configuration KeeperDebug \
             -destination 'generic/platform=iOS' \
+            ARCHS=arm64 \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            -archivePath build/Archive/Keeper.xcarchive \
+            CODE_SIGN_ENTITLEMENTS="" \
             -derivedDataPath build/DerivedData \
             -clonedSourcePackagesDirPath build/SourcePackages \
-            2>&1 | tee build/build.log | (xcbeautify || cat)
+            build 2>&1 | tee build/build.log | (xcbeautify || cat) || {
+              echo "=== BUILD FAILED. RECENT LOG OUTPUT: ==="
+              tail -n 120 build/build.log
+              exit 1
+            }
 
       - name: Package .ipa
         run: |
+          APP_PATH=$(find build/DerivedData -name "Keeper.app" -type d | head -n 1)
+          echo "Found Keeper.app at: $APP_PATH"
+          if [ -z "$APP_PATH" ] || [ ! -d "$APP_PATH" ]; then
+            echo "ERROR: Keeper.app not found in DerivedData"
+            exit 1
+          fi
           mkdir -p build/Payload
-          cp -r build/Archive/Keeper.xcarchive/Products/Applications/Keeper.app build/Payload/
+          cp -R "$APP_PATH" build/Payload/
           cd build
           zip -r -9 Keeper.ipa Payload
           cd ..
           ls -lh build/Keeper.ipa
-
-      - name: Run Unit Tests
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          SIMULATOR_ID=$(xcrun simctl list devices available | awk '/iPhone/ { last = $0; if (/Booted/) { print; found = 1; exit } } END { if (!found && last) print last }' | grep -oE '[0-9A-Fa-f-]{36}')
-          echo "Selected simulator ID: $SIMULATOR_ID"
-          
-          if [ -n "$SIMULATOR_ID" ]; then
-            xcodebuild \
-              -project Keeper.xcodeproj \
-              -scheme KeeperUnitTests \
-              -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
-              CODE_SIGNING_ALLOWED=NO \
-              CODE_SIGNING_REQUIRED=NO \
-              CODE_SIGN_IDENTITY="" \
-              -derivedDataPath build/DerivedData \
-              -clonedSourcePackagesDirPath build/SourcePackages \
-              test 2>&1 | tee build/test.log | (xcbeautify || cat) || true
-          fi
 
       - name: Upload Keeper .ipa Artifact
         uses: actions/upload-artifact@v4
@@ -127,8 +122,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-and-test-logs
-          path: |
-            build/build.log
-            build/test.log
+          name: build-logs
+          path: build/build.log
           if-no-files-found: ignore

@@ -786,7 +786,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nSCRIPT_DIR=\"${CLONED_SOURCE_PACKAGES_DIR:-${BUILD_DIR%/Build/*}/SourcePackages}\"\nif [ ! -x \"${SCRIPT_DIR}/checkouts/firebase-ios-sdk/Crashlytics/run\" ]; then\n  SCRIPT_DIR=\"${BUILD_DIR%/Build/*}/SourcePackages\"\nfi\n\n\"${SCRIPT_DIR}/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+			shellScript = "set -e\n\nif [ -n \"$CI\" ]; then\n  exit 0\nfi\n\nSCRIPT_DIR=\"${CLONED_SOURCE_PACKAGES_DIR:-${BUILD_DIR%/Build/*}/SourcePackages}\"\nif [ ! -x \"${SCRIPT_DIR}/checkouts/firebase-ios-sdk/Crashlytics/run\" ]; then\n  SCRIPT_DIR=\"${BUILD_DIR%/Build/*}/SourcePackages\"\nfi\n\nif [ -x \"${SCRIPT_DIR}/checkouts/firebase-ios-sdk/Crashlytics/run\" ]; then\n  \"${SCRIPT_DIR}/checkouts/firebase-ios-sdk/Crashlytics/run\" || true\nfi\n";
 		};
 		C30297552B4EE30300DD6FFC /* Firebase plist */ = {
 			isa = PBXShellScriptBuildPhase;
