@@ -31,9 +31,8 @@ let package = Package(
                 .process("Assets/wrapper_functions.js"),
             ],
             swiftSettings: [
-                .enableUpcomingFeature("StrictConcurrency"),
-                .enableUpcomingFeature("ExistentialAny"),
             ]
         ),
-    ]
+    ],
+    swiftLanguageModes: [.v5]
 )
