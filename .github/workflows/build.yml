@@ -115,6 +115,7 @@ jobs:
           
           echo "Using build destination: $DEST"
           
+          touch build/build.log
           set -o pipefail
           xcodebuild \
             -project Keeper.xcodeproj \
