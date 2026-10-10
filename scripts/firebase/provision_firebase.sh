@@ -6,7 +6,12 @@
 # never gets it.
 set -eu
 
-cd "$(git rev-parse --show-toplevel)/ios"
+TOPLEVEL="$(git rev-parse --show-toplevel)"
+if [ -d "$TOPLEVEL/ios" ]; then
+  cd "$TOPLEVEL/ios"
+else
+  cd "$TOPLEVEL"
+fi
 DEST="Keeper/Resources/Firebase"
 MARKER="Keeper/GoogleService-Info.plist"
 
@@ -16,7 +21,12 @@ MARKER="Keeper/GoogleService-Info.plist"
 # Prefer the main working tree's copy: no network, no SSH. --git-common-dir points
 # at the shared `.git`; its parent is the main working tree root.
 COMMON_GIT_DIR="$(cd "$(git rev-parse --git-common-dir)" && pwd)"
-MAIN_ROOT="$(dirname "$COMMON_GIT_DIR")/ios"
+BASE_DIR="$(dirname "$COMMON_GIT_DIR")"
+if [ -d "$BASE_DIR/ios" ]; then
+  MAIN_ROOT="$BASE_DIR/ios"
+else
+  MAIN_ROOT="$BASE_DIR"
+fi
 if [ "$MAIN_ROOT" != "$PWD" ]; then
   SRC="$MAIN_ROOT/$DEST"
   if [ -f "$SRC/$MARKER" ]; then
