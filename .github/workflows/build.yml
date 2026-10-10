@@ -95,9 +95,11 @@ jobs:
           
           export CLONED_SOURCE_PACKAGES_DIR="$(pwd)/build/SourcePackages"
           export MODULE_CACHE_PATH="$HOME/Library/Developer/Xcode/DerivedData/ModuleCache.noindex"
+          export GIT_CONFIG_GLOBAL="$(pwd)/build/git-config"
           
           echo "Building Keeper with generic/platform=iOS Simulator..."
           set -o pipefail
+          GIT_CONFIG_GLOBAL="$(pwd)/build/git-config" CLONED_SOURCE_PACKAGES_DIR="$CLONED_SOURCE_PACKAGES_DIR" \
           xcodebuild \
             -project Keeper.xcodeproj \
             -scheme Keeper \
