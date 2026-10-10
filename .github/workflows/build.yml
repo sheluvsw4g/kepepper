@@ -114,6 +114,10 @@ jobs:
             build 2>&1 | tee build/build.log || {
               echo "=== BUILD FAILED. RECENT LOG OUTPUT: ==="
               tail -n 120 build/build.log
+              echo "### Build Failed - Last Log Lines" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              tail -n 80 build/build.log >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
               exit 1
             }
 
