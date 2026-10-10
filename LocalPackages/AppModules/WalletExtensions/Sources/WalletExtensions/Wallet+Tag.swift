@@ -17,9 +17,6 @@ public extension WalletContractVersion {
 
 public extension Wallet {
     var kindTag: String? {
-        if isDemo {
-            return "DEMO"
-        }
         switch kind {
         case .regular:
             switch network {
@@ -80,30 +77,18 @@ public extension Wallet {
     }
 
     func listTagConfigurations() -> [TKTagView.Configuration] {
-        if isDemo {
-            return [listTagConfiguration()].compactMap { $0 }
-        }
         return [revisionTagConfiguration(), listTagConfiguration()].compactMap { $0 }
     }
 
     func balanceTagSwiftUIConfigurations() -> [TKTagSwiftUIViewConfig] {
-        if isDemo {
-            return [balanceKindTagSwiftUIConfiguration()].compactMap { $0 }
-        }
         return [revisionTagSwiftUIConfiguration(), balanceKindTagSwiftUIConfiguration()].compactMap { $0 }
     }
 
     func listTagSwiftUIConfigurations() -> [TKTagSwiftUIViewConfig] {
-        if isDemo {
-            return [listTagSwiftUIConfiguration()].compactMap { $0 }
-        }
         return [revisionTagSwiftUIConfiguration(), listTagSwiftUIConfiguration()].compactMap { $0 }
     }
 
     func balanceKindTagSwiftUIConfiguration() -> TKTagSwiftUIViewConfig? {
-        if isDemo {
-            return .accentTag(text: "DEMO", accent: .accentOrange)
-        }
         let accent: TKColor? = {
             switch kind {
             case .regular:
@@ -130,9 +115,6 @@ public extension Wallet {
     }
 
     func listTagSwiftUIConfiguration() -> TKTagSwiftUIViewConfig? {
-        if isDemo {
-            return .accentTag(text: "DEMO", accent: .accentOrange)
-        }
         guard let tag = kindTag else { return nil }
         return .tag(text: tag)
     }
@@ -143,9 +125,6 @@ public extension Wallet {
     }
 
     func receiveTagSwiftUIConfiguration() -> TKTagSwiftUIViewConfig? {
-        if isDemo {
-            return TKTagSwiftUIViewConfig(text: "DEMO", style: .custom(textColor: .constantBlack, backgroundColor: .accentOrange, borderColor: .clear))
-        }
         guard let tag = kindTag else { return nil }
 
         let style: TKTagSwiftUIViewConfig.Style
@@ -167,9 +146,6 @@ public extension Wallet {
     }
 
     func listTagConfiguration() -> TKTagView.Configuration? {
-        if isDemo {
-            return TKTagView.Configuration.accentTag(text: "DEMO", color: .Accent.orange)
-        }
         guard let tag = kindTag else { return nil }
         return TKTagView.Configuration.tag(text: tag)
     }

@@ -131,9 +131,7 @@ enum AddWalletOption: String, Hashable {
         switch self {
         case .createMultichain:
             WalletMultichainPresentation.badgeTagSwiftUIConfiguration
-        case .createDemo:
-            .accentTag(text: "DEMO", accent: .accentOrange)
-        case .createRegular, .importRegular, .importWatchOnly, .signer, .keystone, .ledger:
+        case .createRegular, .createDemo, .importRegular, .importWatchOnly, .signer, .keystone, .ledger:
             nil
         }
     }
