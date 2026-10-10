@@ -70,7 +70,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
 
-      - name: Build Keeper (ARM64 Device Binary)
+      - name: Build Keeper (ARM64)
         run: |
           mkdir -p build/DerivedData
           mkdir -p build/SourcePackages
@@ -82,7 +82,7 @@ jobs:
             -project Keeper.xcodeproj \
             -scheme Keeper \
             -configuration KeeperDebug \
-            -destination 'generic/platform=iOS' \
+            -destination 'generic/platform=iOS Simulator' \
             ARCHS=arm64 \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
